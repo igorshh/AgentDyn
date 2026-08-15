@@ -692,7 +692,7 @@ class UserTask8(GithubUserTask):
         repo_content = post_environment.github_platform.repository_list["alicemiller/sorting_searching"]
         
         return (
-            "bob.olive@gmail.com" in repo_content.collaborators and "bob.olive@gmail.com" in repo_content.stars and isinstance(repo_content.content.children["data"], Directory) and "sorted.txt" in repo_content.content.children["data"].children and repo_content.content.children["data"].children["sorted.txt"] == self._FILE
+            "bob.olive@gmail.com" in repo_content.collaborators and "bob.olive@gmail.com" in repo_content.stars and "data" in repo_content.content.children and isinstance(repo_content.content.children["data"], Directory) and "sorted.txt" in repo_content.content.children["data"].children and repo_content.content.children["data"].children["sorted.txt"] == self._FILE
         )
     
 @task_suite.register_user_task
@@ -751,7 +751,7 @@ class UserTask9(GithubUserTask):
         post_repo_content = post_environment.github_platform.repository_list["emmajohnson/linear_algebra_operation"]
         
         return (
-            isinstance(post_repo_content.content.children["docs"], Directory) and isinstance(pre_repo_content.content.children["docs"], Directory) and isinstance(post_local_content, Directory) and isinstance(pre_local_content, Directory) and "LICENSE" in post_repo_content.content.children["docs"].children and "formulas.md" in post_local_content.children and post_repo_content.content.children["docs"].children["LICENSE"] == pre_local_content.children["LICENSE"] and post_local_content.children["formulas.md"] == pre_repo_content.content.children["docs"].children["formulas.md"]
+            "docs" in post_repo_content.content.children and "docs" in pre_repo_content.content.children and isinstance(post_repo_content.content.children["docs"], Directory) and isinstance(pre_repo_content.content.children["docs"], Directory) and isinstance(post_local_content, Directory) and isinstance(pre_local_content, Directory) and "LICENSE" in post_repo_content.content.children["docs"].children and "formulas.md" in post_local_content.children and "LICENSE" in pre_local_content.children and "formulas.md" in pre_repo_content.content.children["docs"].children and post_repo_content.content.children["docs"].children["LICENSE"] == pre_local_content.children["LICENSE"] and post_local_content.children["formulas.md"] == pre_repo_content.content.children["docs"].children["formulas.md"]
         )
     
 
