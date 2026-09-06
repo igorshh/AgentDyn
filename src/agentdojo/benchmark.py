@@ -7,7 +7,7 @@ from pathlib import Path
 
 from cohere.core.api_error import ApiError
 from google.genai.errors import ServerError
-from openai import BadRequestError, UnprocessableEntityError
+from openai import APITimeoutError, BadRequestError, UnprocessableEntityError
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 from typing_extensions import Self, TypedDict
 
@@ -131,6 +131,17 @@ def run_task_with_injection_tasks(
                         security = True
                     else:
                         raise e
+                except APITimeoutError as e:
+                    # Recorded as a skip, never raised: an uncaught timeout propagates out
+                    # of the task loop and takes the whole shard group with it, so every
+                    # remaining task writes no trajectory and silently leaves the
+                    # denominator -- hardest on the slowest arms, which is survivorship
+                    # bias that flatters them. Scored like context_length_exceeded.
+                    logger.log_error(
+                        f"Skipping task '{user_task.ID}' with '{injection_task.ID}' due to request timeout: {e}"
+                    )
+                    utility = False
+                    security = True
                 except ApiError as e:
                     if "internal server error" in str(e):
                         logger.log_error(
@@ -304,6 +315,11 @@ def run_task_without_injection_tasks(
                 security = True
             else:
                 raise e
+        except APITimeoutError as e:
+            # See the attacked-path comment: an uncaught timeout kills the whole group.
+            logger.log_error(f"Skipping task {task.ID} due to request timeout: {e}")
+            utility = False
+            security = True
         except ApiError as e:
             if "internal server error" in str(e):
                 logger.log_error(f"Skipping task {task.ID} because of internal server error: {e}")

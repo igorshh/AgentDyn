@@ -3,3 +3,5 @@
 */travel/*
 */workspace/*
 *__pycache__*
+# Eval outputs: trajectories and worker logs, never source.
+runs/

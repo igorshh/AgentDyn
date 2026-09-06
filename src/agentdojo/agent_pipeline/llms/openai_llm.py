@@ -195,7 +195,12 @@ def _function_to_openai(f: Function) -> ChatCompletionToolParam:
     wait=wait_random_exponential(multiplier=1, max=40),
     stop=stop_after_attempt(3),
     reraise=True,
-    retry=retry_if_not_exception_type((openai.BadRequestError, openai.UnprocessableEntityError)),
+    # APITimeoutError is NOT retried: with the timeout sized to our own caps, a
+    # timeout means the prompt cannot finish, so re-sending burns the same GPU
+    # time and pushes the other concurrent requests toward timing out too.
+    retry=retry_if_not_exception_type(
+        (openai.BadRequestError, openai.UnprocessableEntityError, openai.APITimeoutError)
+    ),
 )
 def chat_completion_request(
     client: openai.OpenAI,
